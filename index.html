@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" />
+    <style>
+      p,
+      li {
+        font-size: 32px;
+      }
+    </style>
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <div>
+            <img src="img/docker.png" alt="" height="300" />
+          </div>
+        </section>
+        <section>
+          <h3>Контейнеры</h3>
+          <p>
+            Образ – это набор программного обеспечения на диске, а контейнер –
+            работающий экземпляр образа вместе со сведениями о времени и
+            процессах выполнении операции
+          </p>
+          <img src="img/docker-architecture.png" alt="" />
+        </section>
+        <section>
+          <h3>Контейнеры</h3>
+          <p>
+            Контейнер Docker упаковывает ПО приложения в невидимую коробку со
+            всем, что нужно приложению для запуска. В том числе:
+          </p>
+          <ul>
+            <li>операционную систему;&nbsp;</li>
+            <li>код приложения;</li>
+            <li>среду выполнения;</li>
+            <li>библиотеку;</li>
+            <li>системные инструменты.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Механизмы контейнеризации</h3>
+          <p>
+            Термин «контейнер» на самом деле является просто абстрактным
+            понятием, описывающим, как несколько различных функций работают
+            вместе, чтобы визуализировать своеобразный «контейнер»
+          </p>
+          <p>
+            Когда вы запускаете контейнер, Docker создаёт пространства имён,
+            которые будет использовать конкретный контейнер и обеспечивать
+            изоляцию процессов друг от друга.
+          </p>
+        </section>
+        <section>
+          <h3>Пространства имен контейнера</h3>
+          <ol>
+            <li style="font-size: 24px">
+              <strong>Network (Net)</strong> предоставляет контейнеру
+              возможность ограничивать работу сетевого стека системы внутри
+              своей среды. В этот процесс входят сетевые устройства, IP-адреса,
+              таблицы (IP) маршрутизации, номера портов и многое другое.
+            </li>
+            <li style="font-size: 24px">
+              <strong>PID</strong> – это идентификатор процесса. Если вы
+              запустить утилиту ps aux в командной строке, чтобы проверить,
+              какие процессы запущены в вашей системе, вы видели столбец с
+              названием «PID». Когда процесс помещается в это пространство имён,
+              он получает собственное значение – например, «PID 1».
+            </li>
+            <li style="font-size: 24px">
+              <strong>Mount (MNT)</strong> изолирует точки монтирования в
+              системе.&nbsp;
+            </li>
+            <li style="font-size: 24px">
+              <strong>User</strong> – это неймспейс, который используется для
+              изоляции пользователей в контейнере.&nbsp;
+            </li>
+            <li style="font-size: 24px">
+              <strong>IPC</strong> расшифровывается как Inter Process
+              Communications — «межпроцессное взаимодействие». Это пространство
+              имён, отвечающее за изоляцию IPC ресурсов в процессах, работающих
+              внутри каждого контейнера.
+            </li>
+            <li style="font-size: 24px">
+              <strong>UTS (UNIX Time-Sharing)</strong> позволяет контейнерам
+              иметь собственное имя хоста и доменное имя NIS, которое не зависит
+              от других контейнеров и хост-системы.
+            </li>
+          </ol>
+        </section>
+        <section>
+          <h3>Контрольные группы</h3>
+          <p>
+            Контрольные группы (так называемые «си-группы» или cgroups) — это
+            функция ядра Linux, которая отвечает за управление ресурсами (ЦП,
+            память, сеть). Контрольная группа гарантирует, что контейнеры Docker
+            будут использовать только те ресурсы, которые им нужны, и при
+            необходимости устанавливает ограничения на то, к каким ресурсам
+            контейнер имеет доступ. Иными словами, контрольные группы – это
+            гарант того, что один контейнер не истощит один из этих ресурсов и
+            не приведет к стопу всей системы.
+          </p>
+        </section>
+        <section>
+          <h3>Что такое docker простыми словами</h3>
+          <p>
+            У нас есть пул “чистых” агентов, на которых ничего не
+            предустановлено (кроме необходимого для работы с Docker). И есть
+            множество проектов на разных стеках. У каждого проекта — свои
+            требования по библиотекам, SDK и т.п. И благодаря Docker
+            бизнес-линии могут не делить поровну агентов между собой, а
+            использовать общие ресурсы в соответствии со своими потребностями.
+            Для этого они берут из хранилища и разворачивают на агентах
+            необходимые Docker-образы (с нужными версиями библиотек). Каждая
+            бизнес-линия использует свои Docker-образы с любыми экзотическими
+            инструментами, если таковые требуются.
+          </p>
+        </section>
+        <section>
+          <h3>Системы слоев</h3>
+          <p style="font-size: 26px">
+            Каждый образ Docker состоит из одного или нескольких слоев,
+            наложенных друг на друга. Некоторые слои содержат различные файлы,
+            другие представляют собой метаслои, изменяющие уже существующие.
+            Поэтому разные образы часто имеют общие слои.
+          </p>
+          <img src="img/layers.jpg" alt="" />
+        </section>
+        <section>
+          <h4>Docker demon</h4>
+          <p>
+            Демон за пускается на хост-машине. Пользователь не взаимодействует с
+            сервером на прямую, а использует для этого клиент.
+          </p>
+          <h4>Docker client</h4>
+          <p>
+            Docker-клиент, программа docker — главный интерфейс к Docker. Она
+            получает команды от пользователя и взаимодействует с docker-демоном.
+          </p>
+        </section>
+        <section>
+          <h4>Образы</h4>
+          <p>
+            Docker-образ — это read-only шаблон. Например, образ может содержать
+            операционку Ubuntu c Apache и приложением на ней. Образы
+            используются для создания контейнеров. Docker позволяет легко
+            создавать новые образы, обновлять существующие, или вы можете
+            скачать образы созданные другими людьми. Образы — это компонента
+            сборки docker-а.
+          </p>
+          <h4>Реестр</h4>
+          <p>
+            Docker-реестр хранит образы. Есть публичные и приватные реестры, из
+            которых можно скачать либо загрузить образы. Публичный Docker-реестр
+            — это Docker Hub. Там хранится огромная коллекция образов. Как вы
+            знаете, образы могут быть созданы вами или вы можете использовать
+            образы созданные другими. Реестры — это компонента распространения.
+          </p>
+        </section>
+        <section>
+          <h4>Контейнеры</h4>
+          <p>
+            Контейнеры похожи на директории. В контейнерах содержится все, что
+            нужно для работы приложения. Каждый контейнер создается из образа.
+            Контейнеры могут быть созданы, запущены, остановлены, перенесены или
+            удалены. Каждый контейнер изолирован и является безопасной
+            платформой для приложения. Контейнеры — это компонента работы.
+          </p>
+        </section>
+        <section>
+          <h3>Команды</h3>
+          <ul>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>create</strong> — создает контейнер из выбранного
+                образа.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>start</strong> — активирует уже существующий
+                контейнер.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>run</strong> — создает новый контейнер и сразу включает
+                его.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>ls </strong>— отображает все существующие
+                контейнеры.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>inspect </strong>— подробнее рассказывает о выбранном
+                контейнере.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>logs</strong> — выводит в консоль логи (то есть журнал
+                событий).</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>stop </strong>— пытается остановить выбранный
+                контейнер, отправив ему сигнал <strong>SIGTERM</strong>,
+                требующий завершить всю активность и сохранить пользовательские
+                данные. Если ответ занимает слишком много времени, то следом
+                посылает сигнал <strong>SIGKILL</strong>, чтобы «убить» процесс
+                без сохранения данных.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>kill </strong>— выполняет ту же задачу, что и
+                предыдущая команда, но пропускает шаг с отправкой
+                <strong>SIGTERM</strong>. Сразу выключает контейнер, игнорируя
+                сохранение пользовательских данных.</span
+              >
+            </li>
+            <li>
+              <span style="font-weight: 400; font-size: 25px"
+                ><strong>rm</strong> — удаляет выбранный контейнер (он должен
+                быть выключен, чтобы команда сработала).</span
+              >
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h3>Создание контейнера</h3>
+          <pre><code>docker create [OPTIONS] IMAGE [COMMAND] [ARG...]</code></pre>
+          <h3>Запуск контейнера</h3>
+          <pre><code>docker start [OPTIONS] CONTAINER [CONTAINER...]</code></pre>
+        </section>
+        <section>
+          <h3>Создание и запуск контейнера</h3>
+          <pre><code>docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</code></pre>
+          <h3>Просмотр контейнеров</h3>
+          <pre><code>docker ps [OPTIONS]</code></pre>
+        </section>
+        <section>
+          <h3>Просмотр информации контейнера</h3>
+          <pre><code>docker inspect [OPTIONS] NAME|ID [NAME|ID...]</code></pre>
+          <h3>Просмотр логов</h3>
+          <pre><code>docker logs [OPTIONS] CONTAINER</code></pre>
+        </section>
+        <section>
+          <h3>Остановить контейнер</h3>
+          <pre><code>docker stop [OPTIONS] CONTAINER [CONTAINER...]</code></pre>
+          <h3>Остановить контейнер</h3>
+          <pre><code>docker kill [OPTIONS] CONTAINER [CONTAINER...]</code></pre>
+        </section>
+        <section>
+          <h3>Удалить контейнер</h3>
+          <pre><code>docker rm [OPTIONS] CONTAINER [CONTAINER...]</code></pre>
+          <h3>Создать контейнер с нуля</h3>
+          <pre><code>docker build [OPTIONS] PATH | URL | -</code></pre>
+        </section>
+        <section>
+          <h3>Инструкции в Dockerfile</h3>
+          <ol>
+            <li style="font-size: 25px">
+              <code>FROM</code> — задаёт базовый (родительский) образ.
+            </li>
+            <li style="font-size: 25px">
+              <code>LABEL</code> — описывает метаданные. Например — сведения о
+              том, кто создал и поддерживает образ.
+            </li>
+            <li style="font-size: 25px">
+              <code>ENV</code> — устанавливает постоянные переменные среды.
+            </li>
+            <li style="font-size: 25px">
+              <code>RUN</code> — выполняет команду и создаёт слой образа.
+              Используется для установки в контейнер пакетов.
+            </li>
+            <li style="font-size: 25px">
+              <code>COPY</code> — копирует в контейнер файлы и папки.
+            </li>
+            <li style="font-size: 25px">
+              <code>ADD</code> — копирует файлы и папки в контейнер, может
+              распаковывать локальные .tar-файлы.
+            </li>
+            <li style="font-size: 25px">
+              <code>CMD</code> — описывает команду с аргументами, которую нужно
+              выполнить когда контейнер будет запущен. Аргументы могут быть
+              переопределены при запуске контейнера. В файле может
+              присутствовать лишь одна инструкция <code>CMD</code>.
+            </li>
+            <li style="font-size: 25px">
+              <code>WORKDIR</code> — задаёт рабочую директорию для следующей
+              инструкции.
+            </li>
+            <li style="font-size: 25px">
+              <code>ARG</code> — задаёт переменные для передачи Docker во время
+              сборки образа.
+            </li>
+            <li style="font-size: 25px">
+              <code>ENTRYPOINT</code> — предоставляет команду с аргументами для
+              вызова во время выполнения контейнера. Аргументы не
+              переопределяются.
+            </li>
+            <li style="font-size: 25px">
+              <code>EXPOSE</code> — указывает на необходимость открыть порт.
+            </li>
+            <li style="font-size: 25px">
+              <code>VOLUME</code> — создаёт точку монтирования для работы с
+              постоянным хранилищем.
+            </li>
+          </ol>
+        </section>
+        <section>
+          <h3>Инструкция FROM</h3>
+          <p>
+            Ключевое слово FROM сообщает Docker о том, чтобы при сборке образа
+            использовался бы базовый образ, который соответствует
+            предоставленному имени и тегу. Базовый образ, кроме того, ещё
+            называют родительским образом.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция LABEL</h3>
+          <p>
+            Инструкция LABEL (метка) позволяет добавлять в образ метаданные. В
+            случае с рассматриваемым сейчас файлом, она включает в себя
+            контактные сведения создателя образа. Объявление меток не замедляет
+            процесс сборки образа и не увеличивает его размер. Они лишь содержат
+            в себе полезную информацию об образе Docker, поэтому их
+            рекомендуется включать в файл.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция ENV</h3>
+          <p>
+            Инструкция ENV позволяет задавать постоянные переменные среды,
+            которые будут доступны в контейнере во время его выполнения. В
+            предыдущем примере после создания контейнера можно пользоваться
+            переменной ADMIN.
+          </p>
+          <p>
+            Инструкция ENV хорошо подходит для задания констант. Если вы
+            используете некое значение в Dockerfile несколько раз, скажем, при
+            описании команд, выполняющихся в контейнере, и подозреваете, что,
+            возможно, вам когда-нибудь придётся сменить его на другое, его имеет
+            смысл записать в подобную константу.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция RUN</h3>
+          <p>
+            Инструкция RUN позволяет создать слой во время сборки образа. После
+            её выполнения в образ добавляется новый слой, его состояние
+            фиксируется. Инструкция RUN часто используется для установки в
+            образы дополнительных пакетов. В предыдущем примере инструкция RUN
+            apk update && apk upgrade сообщает Docker о том, что системе нужно
+            обновить пакеты из базового образа. Вслед за этими двумя командами
+            идёт команда && apk add bash, указывающая на то, что в образ нужно
+            установить bash.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция COPY</h3>
+          <p>
+            Инструкция COPY представлена в нашем файле так: COPY . ./app. Она
+            сообщает Docker о том, что нужно взять файлы и папки из локального
+            контекста сборки и добавить их в текущую рабочую директорию образа.
+            Если целевая директория не существует, эта инструкция её создаст.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция ADD</h3>
+          <p>
+            Инструкция ADD позволяет решать те же задачи, что и COPY, но с ней
+            связана ещё пара вариантов использования. Так, с помощью этой
+            инструкции можно добавлять в контейнер файлы, загруженные из
+            удалённых источников, а также распаковывать локальные .tar-файлы.
+          </p>
+          <p>
+            документация предлагает везде, где это возможно, вместо инструкции
+            ADD использовать инструкцию COPY для того, чтобы сделать файлы
+            Dockerfile понятнее
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция CMD</h3>
+          <p>
+            Инструкция CMD предоставляет Docker команду, которую нужно выполнить
+            при запуске контейнера. Результаты выполнения этой команды не
+            добавляются в образ во время его сборки.
+          </p>
+          <p>Вот ещё кое-что, что нужно знать об инструкции CMD</p>
+          <ul>
+            <li>
+              В одном файле Dockerfile может присутствовать лишь одна инструкция
+              <code>CMD</code>. Если в файле есть несколько таких инструкций,
+              система проигнорирует все кроме последней.
+            </li>
+            <li>
+              Инструкция <code>CMD</code> может иметь exec-форму. Если в эту
+              инструкцию не входит упоминание исполняемого файла, тогда в файле
+              должна присутствовать инструкция <code>ENTRYPOINT</code>. В таком
+              случае обе эти инструкции должны быть представлены в формате
+              <code>JSON</code>.
+            </li>
+            <li>
+              Аргументы командной строки, передаваемые <code>docker run</code>,
+              переопределяют аргументы, предоставленные инструкции
+              <code>CMD</code> в Dockerfile.
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h3>Инструкция WORKDIR</h3>
+          <p>
+            Инструкция WORKDIR позволяет изменить рабочую директорию контейнера.
+            С этой директорией работают инструкции COPY, ADD, RUN, CMD и
+            ENTRYPOINT, идущие за WORKDIR. Вот некоторые особенности, касающиеся
+            этой инструкции:
+          </p>
+          <ul>
+            <li>
+              Лучше устанавливать с помощью <code>WORKDIR</code> абсолютные пути
+              к папкам, а не перемещаться по файловой системе с помощью команд
+              <code>cd</code> в Dockerfile.
+            </li>
+            <li>
+              Инструкция <code>WORKDIR</code> автоматически создаёт директорию в
+              том случае, если она не существует.
+            </li>
+            <li>
+              Можно использовать несколько инструкций <code>WORKDIR</code>. Если
+              таким инструкциям предоставляются относительные пути, то каждая из
+              них меняет текущую рабочую директорию.
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h3>Инструкция ARG</h3>
+          <p>
+            Инструкция ARG позволяет задать переменную, значение которой можно
+            передать из командной строки в образ во время его сборки. Значение
+            для переменной по умолчанию можно представить в Dockerfile.
+            Например: ARG my_var=my_default_value.
+          </p>
+          <p>
+            В отличие от ENV-переменных, ARG-переменные недоступны во время
+            выполнения контейнера. Однако ARG-переменные можно использовать для
+            задания значений по умолчанию для ENV-переменных из командной строки
+            в процессе сборки образа. А ENV-переменные уже будут доступны в
+            контейнере во время его выполнения.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция ENTRYPOINT</h3>
+          <p>
+            Инструкция ENTRYPOINT позволяет задавать команду с аргументами,
+            которая должна выполняться при запуске контейнера. Она похожа на
+            команду CMD, но параметры, задаваемые в ENTRYPOINT, не
+            перезаписываются в том случае, если контейнер запускают с
+            параметрами командной строки
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция EXPOSE</h3>
+          <p>
+            Инструкция EXPOSE указывает на то, какие порты планируется открыть
+            для того, чтобы через них можно было бы связаться с работающим
+            контейнером. Эта инструкция не открывает порты. Она, скорее, играет
+            роль документации к образу, средством общения того, кто собирает
+            образ, и того, кто запускает контейнер.
+          </p>
+          <p>
+            Для того чтобы открыть порт (или порты) и настроить перенаправление
+            портов, нужно выполнить команду docker run с ключом -p. Если
+            использовать ключ в виде -P (с заглавной буквой P), то открыты будут
+            все порты, указанные в инструкции EXPOSE.
+          </p>
+        </section>
+        <section>
+          <h3>Инструкция VOLUME</h3>
+          <p>
+            Инструкция VOLUME позволяет указать место, которое контейнер будет
+            использовать для постоянного хранения файлов и для работы с такими
+            файлами.
+          </p>
+        </section>
+        <section>
+          <h3>Пример Dockerfile</h3>
+          <pre><code>FROM python:3.7.2-alpine3.8
+
+LABEL maintainer="jeffmshale@gmail.com"
+
+ENV ADMIN="jeff"
+
+RUN apk update && apk upgrade && apk add bash
+
+COPY . ./app
+
+ADD https://raw.githubusercontent.com/discdiver/pachy-vid/master/sample_vids/vid1.mp4 \
+/my_app_directory
+
+RUN ["mkdir", "/a_directory"]
+
+CMD ["python", "./my_script.py"]
+</code></pre>
+        </section>
+        <section>
+          <h3>Как могут храниться файлы</h3>
+          <p>
+            По умолчанию файлы, создаваемые приложением, работающим в
+            контейнере, сохраняются в слое контейнера, поддерживающем запись.
+            Для того чтобы этот механизм работал, ничего специально настраивать
+            не нужно. Получается дёшево и сердито. Приложению достаточно просто
+            сохранить данные и продолжить заниматься своими делами. Однако после
+            того как контейнер перестанет существовать, исчезнут и данные,
+            сохранённые таким вот нехитрым способом.
+          </p>
+        </section>
+        <section>
+          <h3>Способ 1</h3>
+          <p>
+            Существуют два способа, позволяющих сделать срок жизни данных
+            большим срока жизни контейнера. Один из способов заключается в
+            использовании технологии bind mount. При таком подходе к контейнеру
+            можно примонтировать, например, реально существующую папку. Работать
+            с данными, хранящимися в такой папке, смогут и процессы, находящиеся
+            за пределами Docker. Вот как выглядят монтирование tmpfs и
+            технология bind mount.
+          </p>
+          <img src="img/bind.png" alt="" />
+        </section>
+        <section>
+          <h3>Тома</h3>
+          <p>
+            Том — это файловая система, которая расположена на хост-машине за
+            пределами контейнеров. Созданием и управлением томами занимается
+            Docker. Вот основные свойства томов Docker:
+          </p>
+          <ul>
+            <li style="font-size: 25px">
+              Они представляют собой средства для постоянного хранения
+              информации.
+            </li>
+            <li style="font-size: 25px">
+              Они самостоятельны и отделены от контейнеров.
+            </li>
+            <li style="font-size: 25px">
+              Ими могут совместно пользоваться разные контейнеры.
+            </li>
+            <li style="font-size: 25px">
+              Они позволяют организовать эффективное чтение и запись данных.
+            </li>
+            <li style="font-size: 25px">
+              Тома можно размещать на ресурсах удалённого облачного провайдера.
+            </li>
+            <li style="font-size: 25px">Их можно шифровать.</li>
+            <li style="font-size: 25px">Им можно давать имена.</li>
+            <li style="font-size: 25px">
+              Контейнер может организовать заблаговременное наполнение тома
+              данными.
+            </li>
+            <li style="font-size: 25px">Они удобны для тестирования.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Команды для работы с volume</h3>
+          <pre><code>#создание тома
+docker volume create —-name my_volume</code></pre>
+          <pre><code>#просмотр томов
+docker volume ls</code></pre>
+          <pre><code>#просмотр томов
+docker volume rm my_volume</code></pre>
+          <pre><code>#удалить все тома, которые не используются контейнерами
+docker volume prune</code></pre>
+        </section>
+        <section>
+          <h3>docker-compose</h3>
+          <p>
+            Docker Compose — это инструментальное средство, входящее в состав
+            Docker. Оно предназначено для решения задач, связанных с
+            развёртыванием проектов.
+          </p>
+          <p>
+            Технология Docker Compose, если описывать её упрощённо, позволяет, с
+            помощью одной команды, запускать множество сервисов.
+          </p>
+        </section>
+        <section>
+          <h3>Пример docker-compose laravel</h3>
+          <pre><code>git clone https://github.com/laravel/laravel.git</code></pre>
+        </section>
+        <section>
+          <pre><code>#создать файл docker-compose.yml
+nano ~/laravel/docker-compose.yml</code></pre>
+          <pre><code>version: '3'
+services:
+
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: php:8.1
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    networks:
+      - app-network
+
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /home/username/laravel:/var/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
+
+  # MySQL Service
+  db:
+    image: mysql:5.7.22
+    volumes:
+      - ./mysql:/var/lib/mysql
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+      MYSQL_ROOT_PASSWORD: p@$$w0rd
+    networks:
+      - app-network
+
+# Docker Networks
+networks:
+  app-network:
+    driver: bridge</code></pre>
+        </section>
+        <section>
+          <pre><code>nano ~/laravel/Dockerfile</code></pre>
+          <pre><code>FROM php:8.1-fpm
+
+# Устанавливаем рабочую директорию 
+WORKDIR /var/www
+
+# Копируем composer.lock и composer.json
+COPY composer.lock composer.json /var/www
+
+
+# Устанавливаем зависимости
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    libpq-dev \
+    libonig-dev \
+    libzip-dev 
+
+# Очищаем кэш
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем расширения PHP
+RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+
+# Загружаем актуальную версию Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Создаём пользователя и группу www для приложения Laravel
+RUN groupadd -g 1000 www
+RUN useradd -u 1000 -ms /bin/bash -g www www
+
+# Копируем содержимое текущего каталога в рабочую директорию
+COPY . /var/www
+COPY --chown=www:www . /var/www
+
+# Меняем пользователя на www
+USER www
+
+# В контейнере открываем 9000 порт и запускаем сервер php-fpm
+EXPOSE 9000
+CMD ["php-fpm"]</code></pre>
+        </section>
+        <section>
+          <h3>Создание php.ini</h3>
+          <pre><code>mkdir ~/laravel/php 
+nano ~/laravel/php/local.ini</code></pre>
+        </section>
+        <section>
+          <h3>Настройка nginx</h3>
+          <pre><code>mkdir -p ~/laravel/nginx/conf.d
+          nano ~/laravel/nginx/conf.d/app.conf</code></pre>
+          <pre><code>server {
+    listen 80;
+    index index.php index.html;
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+    root /var/www/public;
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass app:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+        gzip_static on;
+    }
+}</code></pre>
+        </section>
+        <section>
+          <h3>Настройка mysql</h3>
+          <pre><code>mkdir ~/laravel/mysql
+nano ~/laravel/mysql/my.cnf</code></pre>
+          <pre><code>[mysqld]
+general_log = 1
+general_log_file = /var/lib/mysql/general.log</code></pre>
+        </section>
+        <section>
+          <h3>Запуск docker-compose</h3>
+          <pre><code>docker-compose up -d</code></pre>
+        </section>
+        <section>
+          <h3>Создание отдельного пользователя</h3>
+          <pre><code>docker-compose exec db bash</code></pre>
+          <pre><code>mysql -u root -p</code></pre>
+          <pre><code>GRANT ALL ON laravel.* TO 'laravel'@'%' IDENTIFIED BY 'p@$$w0rd';</code></pre>
+          <pre><code>mysql> FLUSH PRIVILEGES;
+mysql> EXIT;
+# exit</code></pre>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+        touch: true,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+
+      // $("pre code").each(function(){
+      //     var html = $(this).html();
+      //     var pattern = html.match(/\s*\n[\t\s]*/);
+      //     $(this).html(html.replace(new RegExp(pattern, "g"),'\n'));
+      // });
+    </script>
+  </body>
+</html>
